@@ -7,17 +7,23 @@ public class GateTrigger : MonoBehaviour
     //Need to revise and use animations
 
     [SerializeField] private Transform gate;
+    [SerializeField] private Transform plate;
 
     public float speed;
     private bool isOpened = false;
+    private Vector3 gateClosedPosition;
+    private Vector3 gateOpenedPosition;
 
-    Vector3 startPos;
-    Vector3 endPos;
+    private Vector3 pressed;
+    private Vector3 notPressed;
 
     private void Start()
     {
-        startPos = gate.transform.position;
-        endPos = gate.transform.position + gate.transform.up * speed;
+        gateClosedPosition = gate.transform.position;
+        gateOpenedPosition = new Vector3(gate.transform.position.x, 6.5f, gate.transform.position.z);
+
+        notPressed = plate.transform.position;
+        pressed = new Vector3(plate.transform.position.x, -0.49f, plate.transform.position.z);
     }
 
     void OnTriggerEnter(Collider other)
@@ -26,23 +32,19 @@ public class GateTrigger : MonoBehaviour
         {
             Debug.Log("Opening gate");
             isOpened = true;
-            Vector3 targetPosition = new Vector3(gate.transform.position.x, 30, gate.transform.position.z);
+            gate.transform.position = gateOpenedPosition;
+            plate.transform.position = pressed;
+        }
+    }
 
-            float timeStartedLerping = 0f;
-            float lerpTime = 1f;
-            float currentLerpTime;
-
-            timeStartedLerping += Time.deltaTime;
-            if (timeStartedLerping > lerpTime)
-            {
-                timeStartedLerping = lerpTime;
-            }
-
-            //float timeSinceStarted = Time.time - timeStartedLerping;
-            float percentageCompleted = timeStartedLerping / lerpTime;
-
-            gate.transform.position = Vector3.Lerp(gate.transform.position, targetPosition, percentageCompleted);
-
+    private void OnTriggerExit(Collider other)
+    {
+        if (isOpened == true)
+        {
+            Debug.Log("Closing gate");
+            isOpened = false;
+            gate.transform.position = gateClosedPosition;
+            plate.transform.position = notPressed;
         }
     }
 }
