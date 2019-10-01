@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     private Transform thingToPull; // null if nothing, else a link to some pullable crate
 
     private void Start() {
-        moveSpeed = 10f;
+        moveSpeed = 4f;
         turnSpeed = 10f;
     }
 
