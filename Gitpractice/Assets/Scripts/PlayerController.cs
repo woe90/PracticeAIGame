@@ -10,37 +10,73 @@ public class PlayerController : MonoBehaviour
     private float moveSpeed;
     private float turnSpeed;
 
-    private Transform thingToPull; // null if nothing, else a link to some pullable crate
+    private Collision interactableObj;
+
+    private bool grabbingObj;
+
+    private Quaternion targetRotation;
+    private Vector3 inputVector;
+    private Vector3 towards;
+    private Vector3 playerDirection;
+    private float direction;
+
 
     private void Start() {
-        moveSpeed = 4f;
+        moveSpeed = 10f;
         turnSpeed = 10f;
+        grabbingObj = false;
     }
 
     private void Update() {
-        move();
-        if (Input.GetKey(KeyCode.E)) {
-            Debug.Log("Grabbing");
-            //AttemptGrab();              //attempt the grab when the key has been pressed
+        
+        Move();
 
+        if (Input.GetKey(KeyCode.E) && !grabbingObj)
+        {
+            Grab();
+        }
+
+        if (Input.GetKeyUp(KeyCode.E) && grabbingObj)
+        {
+            LetGo();
         }
     }
 
-    private void move() {
-        Vector3 inputVector = Vector3.zero;
+    //Need to figure out how to make player push and pull box in one direction
+    private void Move() {
+        
 
-        // Check for movement input
-        if (Input.GetKey(KeyCode.W)) {
-            inputVector += Vector3.forward;
-        } else if (Input.GetKey(KeyCode.S)) {
-            inputVector += Vector3.back;
-        }
+        inputVector = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.A)) {
-            inputVector += Vector3.left;
-        } else if (Input.GetKey(KeyCode.D)) {
-            inputVector += Vector3.right;
-        }
+        if (!Input.GetKey(KeyCode.E))
+        {
+            // Check for movement input
+            if (Input.GetKey(KeyCode.W))
+            {
+                inputVector += Vector3.forward;
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                inputVector += Vector3.back;
+            }
+
+            if (Input.GetKey(KeyCode.A))
+            {
+                inputVector += Vector3.left;
+            }
+            else if (Input.GetKey(KeyCode.D))
+            {
+                inputVector += Vector3.right;
+            }
+        } /*else {
+            if (Input.GetKey(KeyCode.W))
+            {
+                inputVector += Vector3.forward;
+            } else if (Input.GetKey(KeyCode.S))
+            {
+                inputVector += Vector3.back;
+            }
+        }*/
 
         if (inputVector != Vector3.zero) {
 
@@ -50,85 +86,61 @@ public class PlayerController : MonoBehaviour
             rb.velocity = inputVector;
 
             // Face player along movement vector
-            Quaternion targetRotation = Quaternion.LookRotation(inputVector);
+            targetRotation = Quaternion.LookRotation(inputVector);
             trans.rotation = Quaternion.Lerp(trans.rotation, targetRotation, turnSpeed * Time.deltaTime);
         } else {
             rb.velocity = Vector3.zero;
         }
     }
 
-    /*private void OnControllerColliderHit(ControllerColliderHit hit)
+    private void Grab()
     {
-        // We use gravity and weight to push things down, we use
-        // our velocity and push power to push things other directions
-        if (hit.moveDirection.y < -0.3)
-        {
-            force = new Vector3(0, -0.5f, 0) * movement.gravity * weight;
-        }
-        else
-        {
-            force = hit.controller.velocity * pushPower;
-        }
+        Debug.Log("Grabbing GrabbleBox");
+        grabbingObj = true;
+        interactableObj.collider.GetComponent<Rigidbody>().mass = 10f;
+        interactableObj.collider.GetComponent<FixedJoint>().connectedBody = rb;
+    }
 
-        // Apply the push
-        body.AddForceAtPosition(force, hit.point);
+    private void LetGo()
+    {
+        Debug.Log("Letting go of GrabbleBox");
+        grabbingObj = false;
+        interactableObj.collider.GetComponent<Rigidbody>().mass = 1000f;
+        interactableObj.collider.GetComponent<FixedJoint>().connectedBody = null;
+        interactableObj = null;
+    }
 
-        Rigidbody body = hit.collider.attachedRigidbody;
+    // Current issue
+    // If Player grab an object and collides with another object, the current object the player is grabbing will remain stuck to them
+    private void OnCollisionEnter(Collision collision)
+    {
+        /*playerDirection = trans.right;
 
-        // no rigidbody
-        if (body == null || body.isKinematic)
-        {
+        towards = trans.position - collision.transform.position;
+        direction = Vector3.Dot(playerDirection, towards);*/
+
+        //Debug.Log(direction);
+        Debug.Log("Hitting Something");
+        
+        if (collision.collider.tag == "Ground") { 
+            Debug.Log("Colliding with ground");
             return;
         }
 
-        // We dont want to push objects below us
-        if (hit.moveDirection.y < -0.3)
+        if(collision.collider.tag == "GrabbleBox" && !grabbingObj)
         {
+            Debug.Log("Hitting GrabbleBox");
+            interactableObj = collision;
             return;
         }
 
-        // Calculate push direction from move direction,
-        // we only push objects to the sides never up and down
-        Vector3 pushDir = new Vector3(hit.moveDirection.x, 0, hit.moveDirection.z);
-
-        // If you know how fast your character is trying to move,
-        // then you can also multiply the push velocity by that.
-
-        // Apply the push
-        body.velocity = pushDir * pushPower;
-    }*/
-
-    /*private void AttemptGrab()
-    {
-        if (objectToGrab != null)
+        if (collision.collider.tag == "Battery")
         {
-            objectToGrab.Grab();
+            //Pickup battery by hiding or deleting object
+            //Add battery percentage to AI
+            Debug.Log("Picked up battery");
+
+            return;
         }
     }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        IGrabbable grabbableObject = other.GetComponent<IGrabbable>();
-        if (grabbableObject != null)
-        {
-            objectToGrab = grabbableObject;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.GetComponent<IGrabbable>() != null)
-        {
-            objectToGrab = null;
-        }
-    }*/
-
-    // For grabing boxes and moving them
-    /*private void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        if (Input.GetKey(KeyCode.E))
-        {
-
-        }
-    }*/
 }
