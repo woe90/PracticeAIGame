@@ -19,37 +19,40 @@ public class PlayerController : MonoBehaviour
     private Vector3 towards;
     private Vector3 playerDirection;
     private float direction;
+    private float boxCounter;
 
 
     private void Start() {
         moveSpeed = 10f;
         turnSpeed = 10f;
         grabbingObj = false;
+        boxCounter = 0;
     }
 
     private void Update() {
-        
+
         Move();
 
-        if (Input.GetKey(KeyCode.E) && !grabbingObj)
+        //do toggle grab to see if that fix issue noted in collisonenter
+        if (Input.GetKey(KeyCode.E) && !grabbingObj && boxCounter == 0)
         {
             Grab();
         }
 
-        if (Input.GetKeyUp(KeyCode.E) && grabbingObj)
+        if (Input.GetKeyUp(KeyCode.E) && grabbingObj && boxCounter == 1)
         {
             LetGo();
         }
     }
 
-    //Need to figure out how to make player push and pull box in one direction
+    //Need to figure out how to make player push and pull box in one direction of the box
     private void Move() {
         
 
         inputVector = Vector3.zero;
 
-        if (!Input.GetKey(KeyCode.E))
-        {
+        //if (!Input.GetKey(KeyCode.E))
+        //{
             // Check for movement input
             if (Input.GetKey(KeyCode.W))
             {
@@ -68,8 +71,8 @@ public class PlayerController : MonoBehaviour
             {
                 inputVector += Vector3.right;
             }
-        } /*else {
-            if (Input.GetKey(KeyCode.W))
+        //} else {
+           /* if (Input.GetKey(KeyCode.W))
             {
                 inputVector += Vector3.forward;
             } else if (Input.GetKey(KeyCode.S))
@@ -96,41 +99,46 @@ public class PlayerController : MonoBehaviour
     private void Grab()
     {
         Debug.Log("Grabbing GrabbleBox");
+        Debug.Log("Before boxCounter: " + boxCounter);
+        Debug.Log(interactableObj);
         grabbingObj = true;
+        boxCounter += 1;
         interactableObj.collider.GetComponent<Rigidbody>().mass = 10f;
         interactableObj.collider.GetComponent<FixedJoint>().connectedBody = rb;
+        Debug.Log("After boxCounter: " + boxCounter);
     }
 
     private void LetGo()
     {
         Debug.Log("Letting go of GrabbleBox");
+        Debug.Log("Before boxCounter: " + boxCounter);
+        Debug.Log("Before object: " + interactableObj);
         grabbingObj = false;
+        boxCounter -= 1;
         interactableObj.collider.GetComponent<Rigidbody>().mass = 1000f;
         interactableObj.collider.GetComponent<FixedJoint>().connectedBody = null;
         interactableObj = null;
+        Debug.Log("After boxCounter: " + boxCounter);
+        Debug.Log("After object: " + interactableObj);
     }
 
     // Current issue
     // If Player grab an object and collides with another object, the current object the player is grabbing will remain stuck to them
     private void OnCollisionEnter(Collision collision)
     {
-        /*playerDirection = trans.right;
-
-        towards = trans.position - collision.transform.position;
-        direction = Vector3.Dot(playerDirection, towards);*/
-
-        //Debug.Log(direction);
         Debug.Log("Hitting Something");
-        
+        //Debug.Log("Current Object " + interactableObj);
+
         if (collision.collider.tag == "Ground") { 
             Debug.Log("Colliding with ground");
             return;
         }
 
-        if(collision.collider.tag == "GrabbleBox" && !grabbingObj)
+        if(collision.collider.tag == "GrabbleBox" && !grabbingObj && boxCounter == 0)
         {
             Debug.Log("Hitting GrabbleBox");
             interactableObj = collision;
+            //Debug.Log("Current Object after hitting box " + interactableObj);
             return;
         }
 
