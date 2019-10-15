@@ -401,6 +401,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trans: {fileID: 479307348}
   rb: {fileID: 479307350}
+  moveSpeed: 0
+  turnSpeed: 0
+  thingToPull: {fileID: 0}
 --- !u!54 &479307350
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -989,6 +992,7 @@ GameObject:
   - component: {fileID: 1198265564}
   - component: {fileID: 1198265563}
   - component: {fileID: 1198265562}
+  - component: {fileID: 1198265565}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1061,6 +1065,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 34.032, y: -0.45200002, z: -0.07300001}
+--- !u!114 &1198265565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198265561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d90e792f52140af4ebdc161d12aeb7f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 960965727}
+  smoothSpeed: 0.125
+  offset: {x: -10, y: 15, z: -10}
 --- !u!1 &1272324747
 GameObject:
   m_ObjectHideFlags: 0
