@@ -10,7 +10,7 @@ public class AIController : MonoBehaviour
     private float moveSpeed;
     private float turnSpeed;
 
-    private Transform thingToPull; // null if nothing, else a link to some pullable crate
+    
 
     private void Start() {
         moveSpeed = 4f;
@@ -19,11 +19,7 @@ public class AIController : MonoBehaviour
 
     private void Update() {
         move();
-        if (Input.GetKey(KeyCode.E)) {
-            Debug.Log("Grabbing");
-            //AttemptGrab();              //attempt the grab when the key has been pressed
-
-        }
+        
     }
 
     private void move() {
