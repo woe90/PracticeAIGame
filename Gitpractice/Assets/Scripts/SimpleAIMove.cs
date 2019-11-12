@@ -26,6 +26,7 @@ public class SimpleAIMove : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        batteryLife = 0;
         moveSpeed = 4f;
         turnSpeed = 10f;
         radiusOfSat = 0.2f;

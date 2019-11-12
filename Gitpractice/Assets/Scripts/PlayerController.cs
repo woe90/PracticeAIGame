@@ -20,27 +20,30 @@ public class PlayerController : MonoBehaviour
     private Vector3 playerDirection;
     private float direction;
     private float boxCounter;
-
+    private bool isGrounded;
+    private float fallMutipler;
 
     private void Start() {
         moveSpeed = 10f;
         turnSpeed = 10f;
         grabbingObj = false;
         boxCounter = 0;
+        fallMutipler = 3.5f;
     }
 
     private void Update() {
-
-        Move();
+        if (isGrounded == false) {
+            rb.velocity += Vector3.up * Physics.gravity.y * (fallMutipler - 1) * Time.deltaTime;
+        } else {
+            Move();
+        }      
 
         //do toggle grab to see if that fix issue noted in collisonenter
-        if (Input.GetKey(KeyCode.E) && !grabbingObj && boxCounter == 0)
-        {
+        if (Input.GetKey(KeyCode.E) && !grabbingObj && boxCounter == 0) {
             Grab();
         }
 
-        if (Input.GetKeyUp(KeyCode.E) && grabbingObj && boxCounter == 1)
-        {
+        if (Input.GetKeyUp(KeyCode.E) && grabbingObj && boxCounter == 1) {
             LetGo();
         }
     }
@@ -128,6 +131,7 @@ public class PlayerController : MonoBehaviour
     {
         Debug.Log("Hitting Something");
         //Debug.Log("Current Object " + interactableObj);
+        isGrounded = true;
 
         if (collision.collider.tag == "Ground") { 
             Debug.Log("Colliding with ground");
@@ -150,5 +154,10 @@ public class PlayerController : MonoBehaviour
 
             return;
         }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        isGrounded = false;
     }
 }
