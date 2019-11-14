@@ -34,9 +34,8 @@ public class PlayerController : MonoBehaviour
     private void Update() {
         if (isGrounded == false) {
             rb.velocity += Vector3.up * Physics.gravity.y * (fallMutipler - 1) * Time.deltaTime;
-        } else {
-            Move();
-        }      
+        }
+        Move();
 
         //do toggle grab to see if that fix issue noted in collisonenter
         if (Input.GetKey(KeyCode.E) && !grabbingObj && boxCounter == 0) {
@@ -84,7 +83,7 @@ public class PlayerController : MonoBehaviour
             }
         }*/
 
-        if (inputVector != Vector3.zero) {
+        if (inputVector != Vector3.zero && isGrounded == true) {
 
             // Normalize input vector to standardize movement speed
             inputVector.Normalize();
@@ -95,7 +94,8 @@ public class PlayerController : MonoBehaviour
             targetRotation = Quaternion.LookRotation(inputVector);
             trans.rotation = Quaternion.Lerp(trans.rotation, targetRotation, turnSpeed * Time.deltaTime);
         } else {
-            rb.velocity = Vector3.zero;
+            //rb.velocity = Vector3.zero;
+            rb.velocity = new Vector3(0, rb.velocity.y, 0);
         }
     }
 
@@ -131,10 +131,11 @@ public class PlayerController : MonoBehaviour
     {
         Debug.Log("Hitting Something");
         //Debug.Log("Current Object " + interactableObj);
-        isGrounded = true;
+        
 
         if (collision.collider.tag == "Ground") { 
             Debug.Log("Colliding with ground");
+            isGrounded = true;
             return;
         }
 
@@ -143,6 +144,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Hitting GrabbleBox");
             interactableObj = collision;
             //Debug.Log("Current Object after hitting box " + interactableObj);
+            isGrounded = true;
             return;
         }
 
@@ -158,6 +160,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        isGrounded = false;
+        if (collision.collider.tag == "Ground")
+        {
+            isGrounded = false;
+        }
     }
 }
