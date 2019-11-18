@@ -11,15 +11,17 @@ public class PlayerController : MonoBehaviour
     private float turnSpeed;
 
     private Collision interactableObj;
+    private LayerMask mask;
 
     private bool grabbingObj;
+    private bool grabbingObjToggle;
+    private bool commandToggle;
 
     private Quaternion targetRotation;
     private Vector3 inputVector;
     private Vector3 towards;
     private Vector3 playerDirection;
     private float direction;
-    private float boxCounter;
     private bool isGrounded;
     private float fallMutipler;
 
@@ -27,7 +29,8 @@ public class PlayerController : MonoBehaviour
         moveSpeed = 10f;
         turnSpeed = 10f;
         grabbingObj = false;
-        boxCounter = 0;
+        commandToggle = false;
+        grabbingObjToggle = false;
         fallMutipler = 3.5f;
     }
 
@@ -38,13 +41,29 @@ public class PlayerController : MonoBehaviour
         Move();
 
         //do toggle grab to see if that fix issue noted in collisonenter
-        if (Input.GetKey(KeyCode.E) && !grabbingObj && boxCounter == 0) {
-            Grab();
+        if (Input.GetKeyDown(KeyCode.E)) {
+            //Grab();
+            grabbingObjToggle = !grabbingObjToggle;
+
+            if (grabbingObjToggle == true) {
+                Grab();
+            } else if (grabbingObjToggle == false) {
+                LetGo();
+            }
         }
 
-        if (Input.GetKeyUp(KeyCode.E) && grabbingObj && boxCounter == 1) {
-            LetGo();
+        // Stop & Go Command for bot
+        if (Input.GetKeyDown(KeyCode.R)) {
+            commandToggle = !commandToggle;
+
+            if (commandToggle == true) {
+                SimpleAIMove.moveCommand = true;
+            } else {
+                SimpleAIMove.moveCommand = false;
+            }
         }
+
+        
     }
 
     //Need to figure out how to make player push and pull box in one direction of the box
@@ -102,26 +121,20 @@ public class PlayerController : MonoBehaviour
     private void Grab()
     {
         Debug.Log("Grabbing GrabbleBox");
-        Debug.Log("Before boxCounter: " + boxCounter);
         Debug.Log(interactableObj);
         grabbingObj = true;
-        boxCounter += 1;
         interactableObj.collider.GetComponent<Rigidbody>().mass = 10f;
         interactableObj.collider.GetComponent<FixedJoint>().connectedBody = rb;
-        Debug.Log("After boxCounter: " + boxCounter);
     }
 
     private void LetGo()
     {
         Debug.Log("Letting go of GrabbleBox");
-        Debug.Log("Before boxCounter: " + boxCounter);
         Debug.Log("Before object: " + interactableObj);
         grabbingObj = false;
-        boxCounter -= 1;
         interactableObj.collider.GetComponent<Rigidbody>().mass = 1000f;
         interactableObj.collider.GetComponent<FixedJoint>().connectedBody = null;
         interactableObj = null;
-        Debug.Log("After boxCounter: " + boxCounter);
         Debug.Log("After object: " + interactableObj);
     }
 
@@ -139,7 +152,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if(collision.collider.tag == "GrabbleBox" && !grabbingObj && boxCounter == 0)
+        if(collision.collider.tag == "GrabbleBox" && !grabbingObj)
         {
             Debug.Log("Hitting GrabbleBox");
             interactableObj = collision;
@@ -160,7 +173,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        if (collision.collider.tag == "Ground")
+        if ((1<<collision.gameObject.layer == 10))
         {
             isGrounded = false;
         }
