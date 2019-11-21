@@ -40,7 +40,7 @@ public class SimpleAIMove : MonoBehaviour
         batteryLife = 100000;
         moveSpeed = 4f;
         turnSpeed = 10f;
-        radiusOfSat = 1f;
+        radiusOfSat = 0.2f;
         timer = 0;
         viewAngle = 360;
         obstacleBumpSeed = 0.5f;
@@ -53,11 +53,11 @@ public class SimpleAIMove : MonoBehaviour
 
         foreach (Transform visibleTarget in visibleTargets) {
             if (openList.Contains(visibleTarget) == false && closedList.Contains(visibleTarget) == false) {
-                print("Adding " + visibleTarget);
+                //print("Adding " + visibleTarget);
                 openList.Add(visibleTarget);
             }
         }
-        print("************* Open List ************");
+        /*print("************* Open List ************");
 
         foreach(Transform n in openList) {
             print("OpenList: " + n);
@@ -66,14 +66,14 @@ public class SimpleAIMove : MonoBehaviour
         foreach (Transform n in closedList) {
             print("ClosedList: " + n);
         }
-        print("************ Current Target **************");
+        print("************ Current Target **************");*/
 
         if (batteryLife > 0 && moveCommand == true) {
 
             if (openList.Count > 0 && target == null) {
                 target = openList[0];              
             }
-            print("Current Target: " + target);
+            //print("Current Target: " + target);
             if (target != null) {
                 MoveToTarget();
             } else {
@@ -106,7 +106,7 @@ public class SimpleAIMove : MonoBehaviour
         timer += Time.deltaTime;
         Debug.Log("Timer: " + timer);
         UsingBatteryLife(2f);
-        if (timer >= 5) {
+        if (timer >= 1) {
             closedList.Add(target);
             openList.Remove(target);
             target = null;
@@ -122,11 +122,15 @@ public class SimpleAIMove : MonoBehaviour
     }
 
     private void MoveForward() {
-        if (trans.position.x >= 11f || trans.position.x <= 8f) {
-            towards = new Vector3(-10f, 0f, 0f);
+        print("trans.position.x " + trans.position.x);
+        if (trans.position.x >= 11f || trans.position.x <= 8.5f) { //It's not going back to center position after the visible target, see if no targets does the same
+            print("Returning to rail");
+            towards = new Vector3(10f, 0f, 0f);
             Move(towards);
         } else {
-            towards += Vector3.forward;
+            print("Moving Forward");
+            towards = Vector3.forward;
+
             Move(towards);
         }
     }
@@ -146,23 +150,24 @@ public class SimpleAIMove : MonoBehaviour
 
     void OnCollisionEnter(Collision collision) {
         print("AI Colliding with something");
-        if (collision.gameObject.layer != 8) { 
-            print("Return");
-            return;
+        if (collision.gameObject.layer == 8) {
+            // Calcualte vector from player to obstacle
+            Vector3 toObstacle = collision.gameObject.transform.position - trans.position;
+            toObstacle.Normalize();
+            toObstacle.y = 0f;
+
+            float dot = Vector3.Dot(trans.right, toObstacle);
+
+            // Obstacle is on the left of the obstacle -> push player right
+            if (dot < 0f) {
+                trans.position += trans.right * obstacleBumpSeed;
+            } else {
+                trans.position += trans.right * -1f * obstacleBumpSeed;
+            }
         }
 
-        // Calcualte vector from player to obstacle
-        Vector3 toObstacle = collision.gameObject.transform.position - trans.position;
-        toObstacle.Normalize();
-        toObstacle.y = 0f;
-
-        float dot = Vector3.Dot(trans.right, toObstacle);
-
-        // Obstacle is on the left of the obstacle -> push player right
-        if (dot < 0f) {
-            trans.position += trans.right * obstacleBumpSeed;
-        } else {
-            trans.position += trans.right * -1f * obstacleBumpSeed;
+        if (collision.gameObject.layer == 9) {
+            trans.position += trans.up * 0.01f;
         }
     }
 
@@ -185,7 +190,7 @@ public class SimpleAIMove : MonoBehaviour
         }
     }*/
 
-    void FindVisibleTargets()
+    void FindVisibleTargets() //Add Obstacle Mask to make bot stop instead of colliding with it
     {
         visibleTargets.Clear();
         Collider[] targetsInViewRadius = Physics.OverlapSphere(transform.position, viewRadius, targetMask);
