@@ -53,15 +53,9 @@ public class WorldDecomposer : MonoBehaviour {
 
                 RaycastHit hit;
 
-<<<<<<< Updated upstream
-                // Bit shift the index of the layer (9) to get a bit mask
-                int layerMask = 1 << 9;
-=======
-                // Bit shift the index of the layer (8) to get a bit mask
                 int obstacleMask = 1 << 8;
                 int targetMask = 1 << 9;
                 int groundMask = 1 << 10;
->>>>>>> Stashed changes
 
                 // This would cast rays only against colliders in layer 9.
 

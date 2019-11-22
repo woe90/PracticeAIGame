@@ -43,7 +43,7 @@ public class SimpleAIMove : MonoBehaviour
         radiusOfSat = 0.2f;
         timer = 0;
         viewAngle = 360;
-        obstacleBumpSeed = 0.5f;
+        obstacleBumpSeed = 1f;
         timeThreshold = 1f;
     }
 
@@ -165,7 +165,7 @@ public class SimpleAIMove : MonoBehaviour
         }
 
         if (collision.gameObject.layer == 9) {
-            trans.position += trans.up * 0.01f;
+            trans.position += trans.up * 0.1f;
         }
     }
 
