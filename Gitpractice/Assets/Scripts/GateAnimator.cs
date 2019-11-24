@@ -17,11 +17,11 @@ public class GateAnimator : MonoBehaviour
 
     void OnTriggerEnter(Collider col)
     {
-        if (col.gameObject.tag == "Player")
-        {
+        //if (col.gameObject.tag == "Player")
+        //{
             doorOpen = true;
             DoorControl("Open");
-        }
+        //}
     }
     void OnTriggerExit(Collider col)
     {

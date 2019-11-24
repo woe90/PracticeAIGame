@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8019627243529663944}
   - component: {fileID: 8019627243529663951}
   - component: {fileID: 8019627243529663989}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Box
   m_TagString: GrabbleBox
   m_Icon: {fileID: 0}
