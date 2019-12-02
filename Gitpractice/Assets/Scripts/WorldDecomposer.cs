@@ -49,13 +49,13 @@ public class WorldDecomposer : MonoBehaviour {
 
                 RaycastHit hit;
 
-                // Bit shift the index of the layer (8) to get a bit mask
-                int layerMask = 1 << 8;
+                // Bit shift the index of the layer (9) to get a bit mask
+                int layerMask = 1 << 9;
 
-                // This would cast rays only against colliders in layer 8.
+                // This would cast rays only against colliders in layer 9.
 
                 //Keep for notes
-                // But instead we want to collide against everything except layer 8. The ~ operator does this, it inverts a bitmask.
+                // But instead we want to collide against everything except layer 9. The ~ operator does this, it inverts a bitmask.
                 //layerMask = ~layerMask;
 
                 // Does the ray intersect any objects excluding the player layer
