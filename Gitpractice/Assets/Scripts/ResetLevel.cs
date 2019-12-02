@@ -7,6 +7,7 @@ public class ResetLevel : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        if(1 << other.gameObject.layer == 13)
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
