@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 public class SimpleAIMove : MonoBehaviour
 {
     [SerializeField] private Transform trans;
     [SerializeField] private Rigidbody rb;
     [SerializeField] private Text tc;
+    [SerializeField] private NavMeshAgent nav;
+    private NavMeshPath npath;
 
     //Temporary use this
     [SerializeField] private Transform target;
@@ -44,7 +47,7 @@ public class SimpleAIMove : MonoBehaviour
         timer = 0;
         viewAngle = 360;
         obstacleBumpSeed = 1f;
-        timeThreshold = 1f;
+        timeThreshold = 5f;
     }
 
     // Update is called once per frame
@@ -58,7 +61,7 @@ public class SimpleAIMove : MonoBehaviour
                 openList.Add(visibleTarget);
             }
         }
-        /*print("************* Open List ************");
+        print("************* Open List ************");
 
         foreach(Transform n in openList) {
             print("OpenList: " + n);
@@ -67,7 +70,7 @@ public class SimpleAIMove : MonoBehaviour
         foreach (Transform n in closedList) {
             print("ClosedList: " + n);
         }
-        print("************ Current Target **************");*/
+        print("************ Current Target **************");
 
         if (batteryLife > 0 && moveCommand == true) {
 
@@ -75,8 +78,17 @@ public class SimpleAIMove : MonoBehaviour
                 target = openList[0];
             }
             //print("Current Target: " + target);
+            
             if (target != null) {
-                MoveToTarget();
+                if (1 << target.gameObject.layer == 14) {
+                    print("pitfall in room");
+                    timeThreshold = 7f;
+                    MoveToTarget();
+
+                } else {
+                    print("moving to target");
+                    MoveToTarget();
+                }
             } else {
                 MoveForward();
             }
@@ -112,25 +124,47 @@ public class SimpleAIMove : MonoBehaviour
             openList.Remove(target);
             target = null;
             timer = 0;
+            timeThreshold = 5f;
         }
     }
 
     private void MoveToTarget() {
-        towards = new Vector3(target.position.x - trans.position.x, 0f, target.position.z - trans.position.z);//target.position - trans.position;
-                                                                                                              //towards = target.position - trans.position;
-                                                                                                              //lookAtTarget = targetPosition - trans.position;
-        Move(towards);
+        //towards = new Vector3(target.position.x - trans.position.x, 0f, target.position.z - trans.position.z);
+        //Move(towards);
+        nav.SetDestination(towards);
+        UsingBatteryLife(5f);
+        if (!nav.pathPending) {
+            if (nav.remainingDistance <= nav.stoppingDistance) {
+                if (!nav.hasPath || nav.velocity.sqrMagnitude == 0f) {
+                    Wait();
+                }
+            }
+        }
+        
     }
 
     private void MoveForward() {
         print("trans.position.x " + trans.position.x);
-        if (trans.position.x >= 11f || trans.position.x <= 8.5f) {
+        if (trans.position.x >= 11f ) {
+            print("Returning to rail");
+            towards = new Vector3(-10f, 0f, 0f);
+            Move(towards);
+        } else if (trans.position.x <= 8.5f) {
             print("Returning to rail");
             towards = new Vector3(10f, 0f, 0f);
             Move(towards);
         } else {
             print("Moving Forward");
-            towards = Vector3.forward;
+
+            towards = new Vector3(0f, 0f, 1f);
+            //towards = new Vector3(trans.position.x, 0f, trans.position.z + 5f);
+            /*bool pathFound = false;
+            while (pathFound != true) {
+                if (nav.CalculatePath(towards, npath) == true) {
+                    nav.SetPath(npath);
+                    pathFound = true;
+                }
+            }*/
 
             Move(towards);
         }
@@ -203,4 +237,87 @@ public class SimpleAIMove : MonoBehaviour
     }
     #endregion
 
+    private void AStar() {
+        Node startNode = WorldDecomposer.NodeFromWorldPoint(trans.position);
+        Node targetNode = WorldDecomposer.NodeFromWorldPoint(towards);
+
+        print("Start " + startNode.worldPosition);
+        print("End " + targetNode.worldPosition);
+
+        List<Node> openList = new List<Node>();
+        HashSet<Node> closedList = new HashSet<Node>();
+        openList.Add(startNode);
+
+        while (openList.Count > 0) {
+
+            int lowestFCost = openList[0].fCost;
+            int lowFCostIndex = 0;
+
+            for (int i = 0; i < openList.Count; i++) {
+                if ((i + 1) == openList.Count) {
+                    Debug.Log("Out of bound");
+                } else {
+                    if (lowestFCost > openList[i + 1].fCost) {
+                        //swap openList[i + 1] to openList[i]
+                        lowestFCost = openList[i + 1].fCost;
+                        lowFCostIndex = i + 1;
+                    } else if (openList[i].fCost == openList[i + 1].fCost) { // If F cost are same, compare H cost
+                        if (openList[i].hCost > openList[i + 1].hCost) {
+                            lowFCostIndex = i + 1;
+                        }
+                    }
+                }
+            }
+            Node currentNode = openList[lowFCostIndex];
+            openList.Remove(currentNode);
+            closedList.Add(currentNode);
+
+            if (currentNode == targetNode) {
+                RetracePath(startNode, targetNode);
+                return;
+            }
+
+            foreach (Node neighbour in WorldDecomposer.GetNeighbours(currentNode)) {
+                if (!neighbour.ground || neighbour.obstacle || closedList.Contains(neighbour)) {
+                    continue;
+                }
+
+                if (openList.Contains(neighbour)) {
+                    int newGCost = currentNode.gCost + GetDistance(currentNode, neighbour);
+                    if (newGCost < neighbour.gCost) {
+                        neighbour.gCost = newGCost;
+                        neighbour.hCost = GetDistance(neighbour, targetNode); ;
+                        neighbour.fCost = neighbour.gCost + neighbour.hCost;
+                        neighbour.parent = currentNode;
+                        openList.Add(neighbour);
+                    }
+                }
+
+                if (!openList.Contains(neighbour)) {
+                    neighbour.gCost = currentNode.gCost + GetDistance(currentNode, neighbour); ;
+                    neighbour.hCost = GetDistance(neighbour, targetNode); ;
+                    neighbour.fCost = neighbour.gCost + neighbour.hCost;
+                    neighbour.parent = currentNode;
+                    openList.Add(neighbour);
+                }
+            }
+        }
+    }
+
+    void RetracePath(Node startNode, Node endNode) {
+        Node currentNode = endNode;
+
+        while (currentNode != startNode) {
+            path.Add(currentNode);
+            currentNode = currentNode.parent;
+        }
+        path.Reverse();
+    }
+
+    private int GetDistance(Node nodeA, Node nodeB) {
+        int dstX = Mathf.Abs(nodeA.XPos - nodeB.XPos);
+        int dstY = Mathf.Abs(nodeA.YPos - nodeB.YPos);
+
+        return 14 * Mathf.Min(dstX, dstY) + 10 * Mathf.Abs(dstX - dstY);
+    }
 }

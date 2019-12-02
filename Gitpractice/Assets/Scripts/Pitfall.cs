@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Pitfall : MonoBehaviour
-
-
 {
     [SerializeField] GameObject CrossWalk;
 
@@ -13,5 +11,7 @@ public class Pitfall : MonoBehaviour
         Destroy(collision.gameObject);
 
         CrossWalk.SetActive(true);
+
+
     }
 }
