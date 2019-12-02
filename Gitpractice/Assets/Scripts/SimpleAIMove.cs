@@ -14,6 +14,7 @@ public class SimpleAIMove : MonoBehaviour
 
     //Temporary use this
     [SerializeField] private Transform target;
+    [SerializeField] private GameObject prefab;
     private Vector3 towards;
     private Vector3 toTarget;
 
@@ -142,7 +143,7 @@ public class SimpleAIMove : MonoBehaviour
         print(nav.stoppingDistance);
         UsingBatteryLife(5f);
         if (!nav.pathPending) {
-            if (nav.remainingDistance <= nav.stoppingDistance) {
+            if (nav.remainingDistance <= 0.5f) {
                 if (!nav.hasPath || nav.velocity.sqrMagnitude == 0f) {
                     Wait();
                     nav.ResetPath();
@@ -163,7 +164,7 @@ public class SimpleAIMove : MonoBehaviour
             towards = new Vector3(10f, 0f, 0f);
             Move(towards);
         } else {
-            print("Moving Forward");
+            print("Moving Forward");//Not working
 
             //towards = new Vector3(0f, 0f, 1f);
             //Move(towards);
@@ -172,9 +173,10 @@ public class SimpleAIMove : MonoBehaviour
             Vector3 towards1 = new Vector3(0f, 0f, 10f);
             towards = trans.position + towards1;
             print(towards);
+            target = Instantiate(prefab, towards, trans.rotation).transform;
 
             //nav.destination = towards;
-            nav.SetDestination(towards);
+            /*nav.SetDestination(target.position);
             UsingBatteryLife(5f);
 
             if (!nav.pathPending) {
@@ -183,7 +185,7 @@ public class SimpleAIMove : MonoBehaviour
                         nav.ResetPath();
                     }
                 }
-            }
+            }*/
         }
     }
     #endregion
