@@ -143,8 +143,11 @@ public class SimpleAIMove : MonoBehaviour
         print(nav.stoppingDistance);
         UsingBatteryLife(5f);
         if (!nav.pathPending) {
-            if (nav.remainingDistance <= 0.5f) {
-                if (!nav.hasPath || nav.velocity.sqrMagnitude == 0f) {
+            print("1");
+            if (nav.remainingDistance <= 1f) {
+                print("2");
+                print(nav.velocity.sqrMagnitude);
+                if (!nav.hasPath || nav.velocity.sqrMagnitude <= 0.5f) {
                     Wait();
                     nav.ResetPath();
                 }
