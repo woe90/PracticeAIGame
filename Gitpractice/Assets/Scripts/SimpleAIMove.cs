@@ -13,9 +13,10 @@ public class SimpleAIMove : MonoBehaviour
     [SerializeField] private Transform target;
     private Vector3 towards;
 
-    private float moveSpeed, turnSpeed;
+    private float moveSpeed;
+    private float turnSpeed;
     private float radiusOfSat;
-    private float timer, timeThreshold;
+    private float timer;
     private float obstacleBumpSeed;
 
     public static float batteryLife;
@@ -43,7 +44,6 @@ public class SimpleAIMove : MonoBehaviour
         timer = 0;
         viewAngle = 360;
         obstacleBumpSeed = 0.5f;
-        timeThreshold = 1f;
     }
 
     // Update is called once per frame
@@ -71,7 +71,7 @@ public class SimpleAIMove : MonoBehaviour
         if (batteryLife > 0 && moveCommand == true) {
 
             if (openList.Count > 0 && target == null) {
-                target = openList[0];
+                target = openList[0];              
             }
             //print("Current Target: " + target);
             if (target != null) {
@@ -106,7 +106,7 @@ public class SimpleAIMove : MonoBehaviour
         timer += Time.deltaTime;
         Debug.Log("Timer: " + timer);
         UsingBatteryLife(2f);
-        if (timer >= timeThreshold) {
+        if (timer >= 1) {
             closedList.Add(target);
             openList.Remove(target);
             target = null;
@@ -123,7 +123,7 @@ public class SimpleAIMove : MonoBehaviour
 
     private void MoveForward() {
         print("trans.position.x " + trans.position.x);
-        if (trans.position.x >= 11f || trans.position.x <= 8.5f) {
+        if (trans.position.x >= 11f || trans.position.x <= 8.5f) { //It's not going back to center position after the visible target, see if no targets does the same
             print("Returning to rail");
             towards = new Vector3(10f, 0f, 0f);
             Move(towards);
